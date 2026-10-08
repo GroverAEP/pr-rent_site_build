@@ -39,3 +39,14 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sora), system-ui, sans-serif;
 }
+
+@keyframes progress {
+  0% { width: 0%; margin-left: 0%; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 100%; margin-left: 0%; }
+}
+
+.animate-progress {
+  animation: progress 1.5s ease-in-out infinite;
+}
+

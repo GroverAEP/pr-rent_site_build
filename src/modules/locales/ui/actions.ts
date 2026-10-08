@@ -213,3 +213,37 @@ export async function deleteLocalAction(
     return { success: false, message: msg };
   }
 }
+
+export async function updateTourConfigAction(
+  id: string,
+  tourConfig: unknown
+): Promise<LocalActionResult<void>> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, message: "No autorizado." };
+  }
+
+  const repos = getRepositories();
+  const current = await repos.locales.findById(id);
+  if (!current) {
+    return { success: false, message: "Local no encontrado." };
+  }
+
+  if (current.owner_id !== user.id && user.role !== "admin") {
+    return { success: false, message: "No tienes permiso para modificar este local." };
+  }
+
+  try {
+    await repos.locales.update(id, {
+      tour_config: tourConfig as TourConfig,
+    });
+
+    revalidatePath(`/locales/${current.slug}`);
+    revalidatePath(`/panel/locales/${id}/tour`);
+    return { success: true, message: "Configuración 3D actualizada exitosamente." };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error al guardar configuración 3D.";
+    return { success: false, message: msg };
+  }
+}
+

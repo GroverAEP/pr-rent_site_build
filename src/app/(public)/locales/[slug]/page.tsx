@@ -5,17 +5,19 @@ import type { Metadata } from "next";
 import { getRepositories } from "@/shared/db/factory";
 import { formatPrice } from "@/shared/lib/currency";
 import { getCurrentUser } from "@/modules/auth";
+import { TourViewer, normalizeTourConfig } from "@/modules/viewer3d";
+import type { TourConfig } from "@/modules/viewer3d";
 import {
   MapPin,
   Maximize2,
   Box,
   Clock,
-  Sparkles,
   ArrowLeft,
   ChevronRight,
   ShieldCheck,
   Compass,
 } from "lucide-react";
+
 
 interface LocalDetailPageProps {
   params: Promise<{
@@ -79,6 +81,15 @@ export default async function LocalDetailPage({
 
   const owner = await repos.users.findById(local.owner_id);
   const mediaList = await repos.media.findByLocalId(local.id);
+
+  // Parsear tour_config almacenado como JSON en la BD
+  const tourConfig: TourConfig = normalizeTourConfig(local.tour_config);
+
+  // Fotos para el fallback del visor
+  const photos = [
+    local.portada_url,
+    ...mediaList.filter((m) => m.tipo === "foto").map((m) => m.url),
+  ].filter(Boolean);
 
   // Esquema JSON-LD para SEO comercial
   const jsonLd = {
@@ -170,80 +181,38 @@ export default async function LocalDetailPage({
         )}
 
         {/* ========================================================================= */}
-        {/* CONTENEDOR MAESTRO DEL VISOR 3D (PRIMER PANTALLAZO)                       */}
+        {/* VISOR 3D INTERACTIVO                                                      */}
         {/* ========================================================================= */}
-        <section
-          id="visor-3d"
-          className="relative w-full aspect-[16/10] sm:aspect-[21/9] min-h-[380px] max-h-[560px] bg-slate-950 rounded-3xl overflow-hidden shadow-xl border border-slate-800 mb-8 flex flex-col justify-between p-6"
-        >
-          {/* Fondo inmersivo con portada difuminada y cuadrícula 3D */}
-          <div className="absolute inset-0 opacity-40">
-            <Image
-              src={local.portada_url}
-              alt="Ambiente 3D"
-              fill
-              className="object-cover blur-sm scale-105"
-            />
-          </div>
-          <div className="absolute inset-0 bg-radial from-transparent via-slate-950/70 to-slate-950" />
-
-          {/* Barra Superior del Visor 3D */}
-          <div className="relative z-10 flex items-center justify-between gap-3 text-white">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/10 text-xs">
-              <Box className="w-4 h-4 text-amber-400 animate-spin" style={{ animationDuration: "8s" }} />
-              <span className="font-semibold">Recorrido 3D Interactivo</span>
-              <span className="text-white/40">|</span>
-              <span className="text-slate-300">
-                {local.tour_config.dimensions.width}m × {local.tour_config.dimensions.depth}m (Alt: {local.tour_config.dimensions.height}m)
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl font-medium">
-                Preset: {local.tour_config.preset}
-              </span>
-            </div>
-          </div>
-
-          {/* Centro del Visor: Llamada a la Entrada Inmersiva */}
-          <div className="relative z-10 text-center max-w-md mx-auto my-auto text-white">
-            <div className="w-16 h-16 bg-[#0E5A73]/90 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/20 shadow-2xl backdrop-blur-md">
-              <Compass className="w-8 h-8 text-amber-300 animate-pulse" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold font-display mb-1 text-white">
-              Visor Interior 3D Disponible
+        <section id="visor-3d" className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Box className="w-4 h-4 text-[#0E5A73]" />
+              Recorrido 3D Interior
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 mb-5 leading-relaxed">
-              Explora proporciones reales, iluminación y {local.tour_config.hotspots.length} puntos de interés configurados dentro de este local.
-            </p>
-
-            <Link
-              href={`/r/${local.slug}?origin=tour3d`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#25D366] hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-transform hover:scale-105"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Contactar Propietario para Visita</span>
-            </Link>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Compass className="w-3.5 h-3.5" />
+              <span>{tourConfig.room.width}m × {tourConfig.room.depth}m · Alt. {tourConfig.room.height}m</span>
+            </div>
           </div>
-
-          {/* Barra Inferior del Visor: Hotspots configurados */}
-          <div className="relative z-10 flex items-center justify-between text-xs text-slate-300">
-            <div className="flex flex-wrap gap-2">
-              {local.tour_config.hotspots.map((h) => (
+          <TourViewer
+            tourConfig={tourConfig}
+            glbUrl={local.tour_glb_url ?? undefined}
+            photos={photos}
+            titulo={local.titulo}
+          />
+          {tourConfig.hotspots.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {tourConfig.hotspots.map((h) => (
                 <span
                   key={h.id}
-                  className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[11px] flex items-center gap-1.5"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  {h.title}
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
+                  {h.label}
                 </span>
               ))}
             </div>
-
-            <span className="text-[11px] text-slate-400 hidden sm:inline-block">
-              Desplázate con ratón o touch
-            </span>
-          </div>
+          )}
         </section>
 
         {/* ========================================================================= */}

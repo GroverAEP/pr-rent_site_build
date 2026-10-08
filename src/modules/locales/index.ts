@@ -8,5 +8,7 @@ export {
   createLocalAction,
   updateLocalAction,
   deleteLocalAction,
+  updateTourConfigAction,
   type LocalActionResult,
 } from "./ui/actions";
+
