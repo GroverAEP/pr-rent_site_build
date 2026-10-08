@@ -13,6 +13,26 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@/modules/*/*",
+                "@/modules/*/*/**",
+                "!@/modules/*/index",
+              ],
+              message:
+                "Violación de arquitectura de Monolito Modular: No importes archivos internos de otros módulos. Importa únicamente a través de su punto de entrada público '@/modules/<modulo>'.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;
