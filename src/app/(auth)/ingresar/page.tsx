@@ -3,8 +3,8 @@ import { LoginForm } from "@/modules/auth";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Iniciar Sesión | LocalVista",
-  description: "Accede al panel de propietarios o administración de LocalVista.",
+  title: "Iniciar Sesión | RentLocal",
+  description: "Accede al panel de propietarios o administración de RentLocal.",
 };
 
 export default function LoginPage() {
@@ -16,9 +16,9 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-2xl font-bold text-[#0E5A73] font-display"
         >
           <div className="w-9 h-9 bg-[#0E5A73] text-white rounded-xl flex items-center justify-center font-black text-lg">
-            LV
+            RL
           </div>
-          <span>LocalVista</span>
+          <span>RentLocal</span>
         </Link>
       </div>
 

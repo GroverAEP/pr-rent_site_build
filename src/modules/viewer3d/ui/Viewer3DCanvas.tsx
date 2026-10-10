@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { TourConfig, LightingMode, NavMode, Hotspot } from "../domain/tour.types";
 import { buildFullScene } from "../infrastructure/room-builder";
 import * as THREE from "three";
+import { GLTFLoader } from "three-stdlib";
 
 // ─── Tipos exportados ──────────────────────────────────────────────────────────
 export interface ViewerProps {
@@ -32,7 +33,7 @@ const FPS_HEIGHT = 1.65;   // altura de ojos
 const COLLISION_MARGIN = 0.4;
 
 // ─── Componente principal ──────────────────────────────────────────────────────
-export default function Viewer3DCanvas({ tourConfig, onLoadComplete, onError }: ViewerProps) {
+export default function Viewer3DCanvas({ tourConfig, glbUrl, onLoadComplete, onError }: ViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -108,6 +109,44 @@ export default function Viewer3DCanvas({ tourConfig, onLoadComplete, onError }: 
     // Geometría del local
     const roomGroup = buildFullScene(tourConfig);
     scene.add(roomGroup);
+
+    // Si existe modelo 3D GLB (ej. fotogrametría), cargarlo y posicionarlo
+    let glbGroup: THREE.Group | null = null;
+    if (glbUrl) {
+      const loader = new GLTFLoader();
+      loader.load(
+        glbUrl,
+        (gltf) => {
+          glbGroup = gltf.scene;
+          const tf = tourConfig.glbTransform ?? {
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: 1,
+          };
+          glbGroup.position.set(tf.position[0], tf.position[1], tf.position[2]);
+          glbGroup.rotation.set(
+            (tf.rotation[0] * Math.PI) / 180,
+            (tf.rotation[1] * Math.PI) / 180,
+            (tf.rotation[2] * Math.PI) / 180
+          );
+          glbGroup.scale.set(tf.scale, tf.scale, tf.scale);
+
+          // Habilitar sombras en mallas del modelo
+          glbGroup.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+
+          scene.add(glbGroup);
+        },
+        undefined,
+        (err) => {
+          console.warn("No se pudo cargar el modelo GLB:", err);
+        }
+      );
+    }
 
     // Hotspot meshes invisibles (para raycasting)
     const hotspotMeshes: THREE.Mesh[] = [];
@@ -302,7 +341,7 @@ export default function Viewer3DCanvas({ tourConfig, onLoadComplete, onError }: 
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tourConfig, lightMode]);
+  }, [tourConfig, glbUrl, lightMode]);
 
   // Actualizar luces cuando cambia el modo
   useEffect(() => {

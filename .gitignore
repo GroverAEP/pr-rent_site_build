@@ -44,3 +44,7 @@ next-env.d.ts
 *.sqlite-shm
 *.sqlite-wal
 
+# playwright
+/test-results/
+/playwright-report/
+

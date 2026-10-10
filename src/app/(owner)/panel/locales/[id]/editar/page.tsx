@@ -34,7 +34,7 @@ export default async function EditarLocalPage({
   }
 
   if (local.owner_id !== user.id && user.role !== "admin") {
-    redirect("/panel/locales");
+    redirect("/panel");
   }
 
   return (
@@ -43,7 +43,7 @@ export default async function EditarLocalPage({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href="/panel/locales"
+              href="/panel"
               className="p-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />

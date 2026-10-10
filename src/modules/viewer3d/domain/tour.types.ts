@@ -46,6 +46,12 @@ export interface Hotspot {
   icon?: "info" | "camera" | "door" | "warning";
 }
 
+export interface GlbTransform {
+  position: [number, number, number];
+  rotation: [number, number, number]; // en radianes o grados
+  scale: number;
+}
+
 export interface TourConfig {
   room: RoomDimensions;
   floor: FloorMaterial;
@@ -56,6 +62,7 @@ export interface TourConfig {
   hotspots: Hotspot[];
   ambientColor?: string;  // hex, default "#FFFFFF"
   accentColor?: string;   // hex, color de accent lights
+  glbTransform?: GlbTransform;
 }
 
 // Configuración por defecto para nuevos locales
@@ -209,6 +216,20 @@ export function normalizeTourConfig(raw: unknown): TourConfig {
     : [];
 
 
+  // Mapear glbTransform (si existe)
+  const rawGlbTransform = (data.glbTransform as Record<string, unknown>) || undefined;
+  let glbTransform: GlbTransform | undefined = undefined;
+  if (rawGlbTransform) {
+    const rawPos = Array.isArray(rawGlbTransform.position) ? rawGlbTransform.position : [0, 0, 0];
+    const rawRot = Array.isArray(rawGlbTransform.rotation) ? rawGlbTransform.rotation : [0, 0, 0];
+    const rawScale = typeof rawGlbTransform.scale === "number" ? rawGlbTransform.scale : 1;
+    glbTransform = {
+      position: [Number(rawPos[0]) || 0, Number(rawPos[1]) || 0, Number(rawPos[2]) || 0],
+      rotation: [Number(rawRot[0]) || 0, Number(rawRot[1]) || 0, Number(rawRot[2]) || 0],
+      scale: rawScale > 0 ? rawScale : 1,
+    };
+  }
+
   return {
     room: {
       width: Math.max(3, Math.min(roomW, 40)),
@@ -223,6 +244,7 @@ export function normalizeTourConfig(raw: unknown): TourConfig {
     hotspots,
     ambientColor: typeof data.ambientColor === "string" ? data.ambientColor : "#F5F0E8",
     accentColor: typeof data.accentColor === "string" ? data.accentColor : "#FFD580",
+    ...(glbTransform ? { glbTransform } : {}),
   };
 }
 

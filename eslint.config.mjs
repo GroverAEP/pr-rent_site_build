@@ -24,6 +24,8 @@ const eslintConfig = defineConfig([
                 "@/modules/*/*",
                 "@/modules/*/*/**",
                 "!@/modules/*/index",
+                "!@/modules/*/ui/actions*",
+                "!@/modules/*/actions*",
               ],
               message:
                 "Violación de arquitectura de Monolito Modular: No importes archivos internos de otros módulos. Importa únicamente a través de su punto de entrada público '@/modules/<modulo>'.",

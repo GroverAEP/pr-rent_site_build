@@ -90,7 +90,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const localUrl = `${siteUrl}/locales/${local.slug}`;
 
   const messageText = [
-    `Hola, vi tu local "${local.titulo}" en LocalVista (${priceFormatted} en ${local.distrito}).`,
+    `Hola, vi tu local "${local.titulo}" en RentLocal (${priceFormatted} en ${local.distrito}).`,
     `Quisiera más información y agendar una visita:`,
     localUrl,
   ].join("\n");

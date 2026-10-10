@@ -34,14 +34,14 @@ export default async function TourEditorPage({ params }: TourEditorPageProps) {
   }
 
   if (local.owner_id !== user.id && user.role !== "admin") {
-    redirect("/panel/locales");
+    redirect("/panel");
   }
 
   const tourConfig = normalizeTourConfig(local.tour_config);
 
-  const saveAction = async (config: TourConfig) => {
+  const saveAction = async (config: TourConfig, glbUrl?: string | null) => {
     "use server";
-    return updateTourConfigAction(local.id, config);
+    return updateTourConfigAction(local.id, config, glbUrl);
   };
 
   return (
@@ -50,7 +50,7 @@ export default async function TourEditorPage({ params }: TourEditorPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href="/panel/locales"
+              href="/panel"
               className="p-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -63,20 +63,30 @@ export default async function TourEditorPage({ params }: TourEditorPageProps) {
             </div>
           </div>
 
-          <Link
-            href={`/locales/${local.slug}`}
-            target="_blank"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold"
-          >
-            <span>Ver Ficha Pública</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/panel"
+              className="px-3 py-1.5 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
+            >
+              Omitir Tour y Volver
+            </Link>
+
+            <Link
+              href={`/locales/${local.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold"
+            >
+              <span>Ver Ficha Pública</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TourEditorClient
           initialConfig={tourConfig}
+          initialGlbUrl={local.tour_glb_url}
           rubros={local.rubros_sugeridos}
           onSaveAction={saveAction}
         />

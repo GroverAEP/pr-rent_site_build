@@ -20,9 +20,9 @@ export default async function PublicLayout({
               className="flex items-center gap-2 text-xl font-bold text-[#0E5A73] font-display"
             >
               <div className="w-8 h-8 bg-[#0E5A73] text-white rounded-lg flex items-center justify-center font-black text-sm">
-                LV
+                RL
               </div>
-              <span>LocalVista</span>
+              <span>RentLocal</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -98,12 +98,12 @@ export default async function PublicLayout({
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 text-xl font-bold text-white font-display mb-3">
                 <div className="w-7 h-7 bg-[#0E5A73] text-white rounded-lg flex items-center justify-center font-bold text-xs">
-                  LV
+                  RL
                 </div>
-                <span>LocalVista</span>
+                <span>RentLocal</span>
               </div>
               <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-                Plataforma inmobiliaria comercial para Lima y Perú. Recorre locales comerciales en 3D antes de agendar tu visita física y contacta directamente al dueño por WhatsApp.
+                Plataforma inmobiliaria comercial para Lima y Perú. Recorre locales comerciales en 3D antes de agendar tu visita física, ubica el negocio en Google Maps y contacta directamente al dueño por WhatsApp.
               </p>
             </div>
 
@@ -113,23 +113,23 @@ export default async function PublicLayout({
               </h4>
               <ul className="space-y-1.5 text-xs">
                 <li>
+                  <Link href="/locales?distrito=Villa+El+Salvador" className="hover:text-white transition-colors">
+                    Locales en Villa El Salvador
+                  </Link>
+                </li>
+                <li>
                   <Link href="/locales?distrito=Miraflores" className="hover:text-white transition-colors">
                     Locales en Miraflores
                   </Link>
                 </li>
                 <li>
-                  <Link href="/locales?distrito=San+Isidro" className="hover:text-white transition-colors">
-                    Locales en San Isidro
+                  <Link href="/locales?distrito=San+Juan+de+Miraflores" className="hover:text-white transition-colors">
+                    Locales en San Juan de Miraflores
                   </Link>
                 </li>
                 <li>
-                  <Link href="/locales?distrito=Santiago+de+Surco" className="hover:text-white transition-colors">
-                    Locales en Surco
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/locales?distrito=San+Borja" className="hover:text-white transition-colors">
-                    Locales en San Borja
+                  <Link href="/locales?distrito=Villa+Mar%C3%ADa+del+Triunfo" className="hover:text-white transition-colors">
+                    Locales en VMT
                   </Link>
                 </li>
               </ul>
@@ -151,7 +151,7 @@ export default async function PublicLayout({
                   </Link>
                 </li>
                 <li>
-                  <span className="text-slate-500">Recorrido 3D automático</span>
+                  <span className="text-slate-500">Recorrido 3D opcional</span>
                 </li>
               </ul>
             </div>
@@ -159,7 +159,7 @@ export default async function PublicLayout({
 
           <div className="pt-8 border-t border-slate-800 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              © 2026 LocalVista Perú. Todos los derechos reservados.
+              © 2026 RentLocal Perú. Todos los derechos reservados.
             </div>
             <div className="flex gap-4">
               <span className="text-slate-500">Lima Metropolitana, Perú</span>

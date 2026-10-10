@@ -17,9 +17,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LocalVista | Locales Comerciales con Recorrido 3D en Perú",
+  title: "RentLocal | Locales Comerciales con Ubicación y Tour 3D en Perú",
   description:
-    "Plataforma para explorar, publicar y contactar sobre locales comerciales en alquiler, venta y traspaso con recorrido 3D inmersivo del interior.",
+    "Plataforma para explorar, publicar y contactar sobre locales comerciales en alquiler, venta y traspaso con ubicación en Google Maps y recorrido 3D opcional del interior.",
 };
 
 export default function RootLayout({

@@ -1,13 +1,31 @@
 import { env } from "@/shared/config/env";
-import { IUserRepository, SqliteUserRepository } from "@/modules/users";
-import { ILocalRepository, SqliteLocalRepository } from "@/modules/locales";
-import { ILeadRepository, SqliteLeadRepository } from "@/modules/leads";
-import { IAuditLogRepository, SqliteAuditLogRepository } from "@/modules/admin";
+import {
+  IUserRepository,
+  SqliteUserRepository,
+  SupabaseUserRepository,
+} from "@/modules/users";
+import {
+  ILocalRepository,
+  SqliteLocalRepository,
+  SupabaseLocalRepository,
+} from "@/modules/locales";
+import {
+  ILeadRepository,
+  SqliteLeadRepository,
+  SupabaseLeadRepository,
+} from "@/modules/leads";
+import {
+  IAuditLogRepository,
+  SqliteAuditLogRepository,
+  SupabaseAuditLogRepository,
+} from "@/modules/admin";
 import {
   IMediaRepository,
   SqliteMediaRepository,
+  SupabaseMediaRepository,
   IStorageService,
   LocalDiskStorageService,
+  SupabaseStorageService,
 } from "@/modules/media";
 
 export interface AppRepositories {
@@ -38,11 +56,19 @@ export function getRepositories(): AppRepositories {
     return cachedRepos;
   }
 
-  // En producción (DB_DRIVER === "supabase")
-  // Se integrarán los adaptadores de Supabase (Fase 8)
-  throw new Error(
-    "Supabase driver no configurado aún en este entorno. Utiliza DB_DRIVER=sqlite en desarrollo."
-  );
+  if (env.DB_DRIVER === "supabase") {
+    cachedRepos = {
+      users: new SupabaseUserRepository(),
+      locales: new SupabaseLocalRepository(),
+      leads: new SupabaseLeadRepository(),
+      audit: new SupabaseAuditLogRepository(),
+      media: new SupabaseMediaRepository(),
+      storage: new SupabaseStorageService(),
+    };
+    return cachedRepos;
+  }
+
+  throw new Error(`Driver de base de datos no soportado: ${env.DB_DRIVER}`);
 }
 
 export function resetRepositoriesCache(): void {

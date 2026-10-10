@@ -91,8 +91,8 @@ export async function createLocalAction(
       direccion: data.direccion,
       distrito: data.distrito,
       ciudad: data.ciudad,
-      lat: null,
-      lng: null,
+      lat: data.lat ?? null,
+      lng: data.lng ?? null,
       descripcion: data.descripcion,
       caracteristicas: data.caracteristicas,
       rubros_sugeridos: data.rubros_sugeridos,
@@ -105,12 +105,13 @@ export async function createLocalAction(
     // Registrar foto en media
     await repos.media.create({
       id: `med-${id}-cover`,
-      local_id: id,
+      local_id: local.id,
       tipo: "foto",
       url: data.portada_url,
       orden: 0,
     });
 
+    revalidatePath("/panel");
     revalidatePath("/panel/locales");
     revalidatePath("/locales");
     revalidatePath("/");
@@ -164,12 +165,15 @@ export async function updateLocalAction(
       direccion: parsed.data.direccion,
       distrito: parsed.data.distrito,
       ciudad: parsed.data.ciudad,
+      lat: parsed.data.lat ?? null,
+      lng: parsed.data.lng ?? null,
       descripcion: parsed.data.descripcion,
       caracteristicas: parsed.data.caracteristicas,
       rubros_sugeridos: parsed.data.rubros_sugeridos,
       portada_url: parsed.data.portada_url,
     });
 
+    revalidatePath("/panel");
     revalidatePath("/panel/locales");
     revalidatePath(`/locales/${current.slug}`);
     revalidatePath("/locales");
@@ -205,6 +209,7 @@ export async function deleteLocalAction(
 
   try {
     await repos.locales.delete(id);
+    revalidatePath("/panel");
     revalidatePath("/panel/locales");
     revalidatePath("/locales");
     return { success: true, message: "Local eliminado exitosamente." };
@@ -216,7 +221,8 @@ export async function deleteLocalAction(
 
 export async function updateTourConfigAction(
   id: string,
-  tourConfig: unknown
+  tourConfig: unknown,
+  tourGlbUrl?: string | null
 ): Promise<LocalActionResult<void>> {
   const user = await getCurrentUser();
   if (!user) {
@@ -234,12 +240,18 @@ export async function updateTourConfigAction(
   }
 
   try {
-    await repos.locales.update(id, {
+    const updatePayload: Record<string, unknown> = {
       tour_config: tourConfig as TourConfig,
-    });
+    };
+    if (tourGlbUrl !== undefined) {
+      updatePayload.tour_glb_url = tourGlbUrl;
+    }
+
+    await repos.locales.update(id, updatePayload);
 
     revalidatePath(`/locales/${current.slug}`);
     revalidatePath(`/panel/locales/${id}/tour`);
+    revalidatePath("/panel");
     return { success: true, message: "Configuración 3D actualizada exitosamente." };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Error al guardar configuración 3D.";

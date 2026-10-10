@@ -11,19 +11,22 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "LocalVista | Locales Comerciales con Recorrido 3D en Lima, Perú",
+  title: "RentLocal | Locales Comerciales con Ubicación y Tour 3D en Lima, Perú",
   description:
-    "Encuentra locales comerciales en alquiler, venta o traspaso en Miraflores, San Isidro, Surco y más distritos de Lima con tour virtual 3D del interior.",
+    "Encuentra locales comerciales en alquiler, venta o traspaso en Villa El Salvador, Miraflores, San Juan de Miraflores y más distritos con ubicación en mapa y tour virtual.",
 };
 
 const DISTRITOS_POPULARES = [
+  "Villa El Salvador",
+  "San Juan de Miraflores",
+  "Villa María del Triunfo",
+  "Lurín",
+  "Chorrillos",
+  "Santiago de Surco",
   "Miraflores",
   "San Isidro",
-  "Santiago de Surco",
   "San Borja",
-  "Barranco",
   "La Victoria",
-  "Cercado de Lima",
 ];
 
 export default async function HomePage() {
@@ -43,18 +46,18 @@ export default async function HomePage() {
         <div className="relative max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs font-semibold text-amber-900 mb-6 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
-            <span>La primera plataforma comercial 3D-First de Lima</span>
+            <span>RentLocal · Locales comerciales con mapa y tour 3D</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-display mb-4 leading-tight">
-            Encuentra el local ideal para tu negocio y{" "}
+            Encuentra el local ideal para tu negocio con{" "}
             <span className="text-[#0E5A73] underline decoration-[#F59E0B] decoration-4 underline-offset-4">
-              recorre su interior en 3D
+              mapa y recorrido 3D
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Ahorra semanas de visitas físicas. Inspecciona distribución, vitrinas y acabados en 360° antes de contactar directamente al dueño por WhatsApp.
+            Revisa la ubicación exacta en Google Maps, inspecciona acabados en 360° y contacta directamente al dueño por WhatsApp.
           </p>
 
           {/* Buscador Integrado */}
@@ -154,7 +157,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 font-display mb-3">
-              ¿Cómo funciona LocalVista?
+              ¿Cómo funciona RentLocal?
             </h2>
             <p className="text-sm text-slate-500">
               Diseñado para emprendedores y franquicias que buscan abrir su próximo local comercial en tiempo récord.

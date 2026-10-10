@@ -5,9 +5,9 @@ import { LocalCard, LocalFilterBar, Operacion } from "@/modules/locales";
 import { Building2, SearchX } from "lucide-react";
 
 export const metadata = {
-  title: "Catálogo de Locales Comerciales con Tour 3D en Lima | LocalVista",
+  title: "Catálogo de Locales Comerciales en Lima | RentLocal",
   description:
-    "Explora y filtra locales comerciales en alquiler, venta o traspaso en los distritos más comerciales de Lima con vista 3D.",
+    "Explora y filtra locales comerciales en alquiler, venta o traspaso en Villa El Salvador y distritos de Lima con ubicación en mapa y vista 3D.",
 };
 
 interface LocalesPageProps {

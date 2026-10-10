@@ -6,12 +6,17 @@ import { CheckCircle2, AlertCircle } from "lucide-react";
 
 interface TourEditorClientProps {
   initialConfig: TourConfig;
+  initialGlbUrl?: string | null;
   rubros: string[];
-  onSaveAction: (config: TourConfig) => Promise<{ success: boolean; message?: string }>;
+  onSaveAction: (
+    config: TourConfig,
+    glbUrl?: string | null
+  ) => Promise<{ success: boolean; message?: string }>;
 }
 
 export function TourEditorClient({
   initialConfig,
+  initialGlbUrl,
   rubros,
   onSaveAction,
 }: TourEditorClientProps) {
@@ -20,10 +25,10 @@ export function TourEditorClient({
     message: string;
   } | null>(null);
 
-  const handleSave = async (config: TourConfig) => {
+  const handleSave = async (config: TourConfig, glbUrl?: string | null) => {
     setStatus(null);
     try {
-      const res = await onSaveAction(config);
+      const res = await onSaveAction(config, glbUrl);
       if (res.success) {
         setStatus({
           type: "success",
@@ -64,6 +69,7 @@ export function TourEditorClient({
 
       <TourEditor
         initialConfig={initialConfig}
+        initialGlbUrl={initialGlbUrl}
         rubros={rubros}
         onSave={handleSave}
       />

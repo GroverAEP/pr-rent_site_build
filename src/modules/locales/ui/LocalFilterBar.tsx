@@ -5,9 +5,14 @@ import { useState, useTransition } from "react";
 import { Search, RotateCcw, Filter, SlidersHorizontal } from "lucide-react";
 
 const DISTRITOS_LIMA = [
+  "Villa El Salvador",
+  "San Juan de Miraflores",
+  "Villa María del Triunfo",
+  "Lurín",
+  "Chorrillos",
+  "Santiago de Surco",
   "Miraflores",
   "San Isidro",
-  "Santiago de Surco",
   "San Borja",
   "Barranco",
   "La Victoria",
@@ -18,6 +23,8 @@ const DISTRITOS_LIMA = [
   "Pueblo Libre",
   "San Miguel",
   "Surquillo",
+  "Ate",
+  "Los Olivos",
 ];
 
 export function LocalFilterBar() {

@@ -16,6 +16,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Compass,
+  Map,
+  ExternalLink,
 } from "lucide-react";
 
 
@@ -34,14 +36,14 @@ export async function generateMetadata({
 
   if (!local) {
     return {
-      title: "Local no encontrado | LocalVista",
+      title: "Local no encontrado | RentLocal",
     };
   }
 
   const priceFormatted = formatPrice(local.precio, local.moneda);
 
   return {
-    title: `${local.titulo} en ${local.distrito} (${priceFormatted}) | LocalVista`,
+    title: `${local.titulo} en ${local.distrito} (${priceFormatted}) | RentLocal`,
     description: `${local.titulo} en ${local.distrito}, Lima. ${local.area_m2} m². Recorre el interior en 3D y contacta directamente al propietario.`,
     openGraph: {
       title: `${local.titulo} - Recorrido 3D en ${local.distrito}`,
@@ -340,6 +342,61 @@ export default async function LocalDetailPage({
               )}
             </div>
 
+            {/* Ubicación en Google Maps */}
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#0E5A73]/10 flex items-center justify-center text-[#0E5A73]">
+                    <Map className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 font-display">
+                      Ubicación en Google Maps
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      {local.direccion}, {local.distrito}, Lima
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href={
+                    local.lat && local.lng
+                      ? `https://www.google.com/maps/search/?api=1&query=${local.lat},${local.lng}`
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          `${local.direccion}, ${local.distrito}, Lima, Perú`
+                        )}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E5A73] hover:bg-[#093F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Abrir en Google Maps</span>
+                </a>
+              </div>
+
+              {/* Iframe interactivo de Google Maps */}
+              <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+                <iframe
+                  title={`Ubicación de ${local.titulo}`}
+                  width="100%"
+                  height="100%"
+                  className="border-0"
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={
+                    local.lat && local.lng
+                      ? `https://maps.google.com/maps?q=${local.lat},${local.lng}&hl=es&z=16&output=embed`
+                      : `https://maps.google.com/maps?q=${encodeURIComponent(
+                          `${local.direccion}, ${local.distrito}, Lima, Perú`
+                        )}&hl=es&z=15&output=embed`
+                  }
+                />
+              </div>
+            </div>
+
             {/* Descripción */}
             <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
               <h2 className="text-lg font-bold text-slate-900 font-display">
@@ -401,7 +458,7 @@ export default async function LocalDetailPage({
                     <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   </div>
                   <p className="text-xs text-slate-500 truncate">
-                    Propietario Verificado LocalVista
+                    Propietario Verificado RentLocal
                   </p>
                 </div>
               </div>

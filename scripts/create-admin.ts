@@ -1,9 +1,40 @@
 import { hashSync } from "bcrypt-ts";
+import { randomUUID } from "node:crypto";
+import { getRepositories } from "../src/shared/db/factory";
 import { getSqliteDb } from "../src/shared/db/sqlite.driver";
 import { env } from "../src/shared/config/env";
 import { runSqliteMigrations } from "./migrate-sqlite";
 
 export async function createAdmin() {
+  if (env.DB_DRIVER === "supabase") {
+    const users = getRepositories().users;
+    const adminEmail = env.ADMIN_EMAIL.toLowerCase();
+    const adminPasswordHash = hashSync(env.ADMIN_PASSWORD, 10);
+    const existingAdmin = await users.findAdmin();
+
+    if (existingAdmin) {
+      await users.update(existingAdmin.id, {
+        email: adminEmail,
+        password_hash: adminPasswordHash,
+      });
+      console.log(`✅ Administrador actualizado: ${adminEmail}`);
+      return;
+    }
+
+    await users.create({
+      id: randomUUID(),
+      role: "admin",
+      nombre: "Administrador LocalVista",
+      email: adminEmail,
+      password_hash: adminPasswordHash,
+      telefono_whatsapp: "+51999999999",
+      nombre_negocio: "LocalVista Core",
+      estado: "activo",
+    });
+    console.log(`✅ Administrador único creado exitosamente: ${adminEmail}`);
+    return;
+  }
+
   runSqliteMigrations();
   const db = getSqliteDb();
 

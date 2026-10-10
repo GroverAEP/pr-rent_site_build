@@ -25,6 +25,8 @@ export const localFormSchema = z.object({
     .string()
     .min(2, "Selecciona o ingresa un distrito"),
   ciudad: z.string().default("Lima"),
+  lat: z.coerce.number().nullable().optional(),
+  lng: z.coerce.number().nullable().optional(),
   descripcion: z
     .string()
     .min(20, "La descripción debe tener al menos 20 caracteres")

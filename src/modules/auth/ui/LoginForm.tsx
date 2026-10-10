@@ -66,7 +66,7 @@ export function LoginForm() {
             Iniciar Sesión
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Accede al panel de propietario o administración de LocalVista
+            Accede al panel de propietario o administración de RentLocal
           </p>
         </div>
 

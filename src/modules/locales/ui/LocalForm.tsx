@@ -16,12 +16,19 @@ import {
   CheckCircle2,
   AlertCircle,
   Save,
+  Map,
+  Navigation,
 } from "lucide-react";
 
 const DISTRITOS_LIMA = [
+  "Villa El Salvador",
+  "San Juan de Miraflores",
+  "Villa María del Triunfo",
+  "Lurín",
+  "Chorrillos",
+  "Santiago de Surco",
   "Miraflores",
   "San Isidro",
-  "Santiago de Surco",
   "San Borja",
   "Barranco",
   "La Victoria",
@@ -34,7 +41,6 @@ const DISTRITOS_LIMA = [
   "Surquillo",
   "Ate",
   "Los Olivos",
-  "Chorrillos",
 ];
 
 const RUBROS_POPULARES = [
@@ -78,6 +84,8 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
           direccion: initialData.direccion,
           distrito: initialData.distrito,
           ciudad: initialData.ciudad,
+          lat: initialData.lat,
+          lng: initialData.lng,
           descripcion: initialData.descripcion,
           portada_url: initialData.portada_url,
           caracteristicas: initialData.caracteristicas,
@@ -90,8 +98,10 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
           moneda: "PEN",
           area_m2: 80,
           direccion: "",
-          distrito: "Miraflores",
+          distrito: "Villa El Salvador",
           ciudad: "Lima",
+          lat: -12.215,
+          lng: -76.938,
           descripcion: "",
           portada_url:
             "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80",
@@ -122,6 +132,8 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
     }
   };
 
+  const [skipTour, setSkipTour] = useState(false);
+
   const onSubmit = async (data: LocalFormData) => {
     setIsSubmitting(true);
     setServerError(null);
@@ -134,7 +146,7 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
           setIsSubmitting(false);
           return;
         }
-        router.push("/panel/locales");
+        router.push("/panel");
         router.refresh();
       } else {
         const res = await createLocalAction(data);
@@ -143,7 +155,11 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
           setIsSubmitting(false);
           return;
         }
-        router.push(`/panel/locales/${res.data?.id}/tour`);
+        if (skipTour) {
+          router.push("/panel");
+        } else {
+          router.push(`/panel/locales/${res.data?.id}/tour`);
+        }
         router.refresh();
       }
     } catch {
@@ -295,6 +311,71 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Coordenadas Google Maps */}
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Map className="w-4 h-4 text-[#0E5A73]" />
+                Ubicación en Google Maps (Coordenadas)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Permite a los interesados ver el negocio en Google Maps y calcular rutas de llegada.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if ("geolocation" in navigator) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      setValue("lat", Number(position.coords.latitude.toFixed(6)));
+                      setValue("lng", Number(position.coords.longitude.toFixed(6)));
+                    },
+                    () => {
+                      alert("No se pudo obtener la ubicación actual. Ingrese las coordenadas manualmente o desde Google Maps.");
+                    }
+                  );
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0E5A73] bg-[#0E5A73]/10 hover:bg-[#0E5A73]/20 rounded-lg transition-colors cursor-pointer self-start sm:self-auto"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              Usar mi ubicación actual
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                Latitud (ej: -12.2154)
+              </label>
+              <input
+                type="number"
+                step="any"
+                placeholder="-12.2154"
+                {...register("lat")}
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0E5A73]"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                Longitud (ej: -76.9381)
+              </label>
+              <input
+                type="number"
+                step="any"
+                placeholder="-76.9381"
+                {...register("lng")}
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0E5A73]"
+              />
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400">
+            Tip: Puedes buscar el local en Google Maps, hacer clic derecho sobre la ubicación y copiar las coordenadas.
+          </p>
         </div>
 
         <div>
@@ -465,29 +546,44 @@ export function LocalForm({ initialData, isEditing = false }: LocalFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors cursor-pointer"
+          className="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors cursor-pointer text-center"
         >
           Cancelar
         </button>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2.5 bg-[#0E5A73] hover:bg-[#093F52] text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          <span>
-            {isSubmitting
-              ? "Guardando..."
-              : isEditing
-              ? "Guardar Cambios"
-              : "Guardar y Continuar al Tour 3D"}
-          </span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {!isEditing && (
+            <button
+              type="submit"
+              onClick={() => setSkipTour(true)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-5 py-2.5 border border-[#0E5A73] text-[#0E5A73] hover:bg-[#0E5A73]/10 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>Guardar y Omitir Tour 3D</span>
+            </button>
+          )}
+
+          <button
+            type="submit"
+            onClick={() => setSkipTour(false)}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto px-6 py-2.5 bg-[#0E5A73] hover:bg-[#093F52] text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>
+              {isSubmitting
+                ? "Guardando..."
+                : isEditing
+                ? "Guardar Cambios"
+                : "Guardar y Configurar Tour 3D"}
+            </span>
+          </button>
+        </div>
       </div>
     </form>
   );

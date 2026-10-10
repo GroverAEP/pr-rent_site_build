@@ -3,7 +3,7 @@ import { RegisterForm } from "@/modules/auth";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Registro de Propietario | LocalVista",
+  title: "Registro de Propietario | RentLocal",
   description: "Crea tu cuenta de propietario para publicar locales comerciales con recorrido 3D.",
 };
 
@@ -16,9 +16,9 @@ export default function RegisterPage() {
           className="inline-flex items-center gap-2 text-2xl font-bold text-[#0E5A73] font-display"
         >
           <div className="w-9 h-9 bg-[#0E5A73] text-white rounded-xl flex items-center justify-center font-black text-lg">
-            LV
+            RL
           </div>
-          <span>LocalVista</span>
+          <span>RentLocal</span>
         </Link>
       </div>
 

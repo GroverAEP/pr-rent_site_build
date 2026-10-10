@@ -20,8 +20,9 @@ const Viewer3DCanvas = dynamic(() => import("./Viewer3DCanvas"), {
 
 interface TourEditorProps {
   initialConfig: TourConfig;
+  initialGlbUrl?: string | null;
   rubros: string[];
-  onSave: (config: TourConfig) => Promise<void>;
+  onSave: (config: TourConfig, glbUrl?: string | null) => Promise<void>;
 }
 
 const FLOOR_OPTIONS: { value: FloorMaterial; label: string; color: string }[] = [
@@ -50,13 +51,84 @@ const FURNITURE_TYPES = [
   { type: "fridge" as const, label: "Refrigerador", icon: "❄️" },
 ];
 
-export default function TourEditor({ initialConfig, rubros, onSave }: TourEditorProps) {
+export default function TourEditor({
+  initialConfig,
+  initialGlbUrl,
+  rubros,
+  onSave,
+}: TourEditorProps) {
   const [config, setConfig] = useState<TourConfig>(initialConfig);
-  const [activeTab, setActiveTab] = useState<"room" | "materials" | "furniture" | "hotspots">("room");
+  const [glbUrl, setGlbUrl] = useState<string | null>(initialGlbUrl ?? null);
+  const [activeTab, setActiveTab] = useState<
+    "room" | "materials" | "furniture" | "hotspots" | "model3d"
+  >("model3d");
   const [saving, setSaving] = useState(false);
+  const [uploadingGlb, setUploadingGlb] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [newHotspot, setNewHotspot] = useState<Partial<Hotspot>>({});
 
   const update = (partial: Partial<TourConfig>) => setConfig(c => ({ ...c, ...partial }));
+
+  const currentGlbTransform = config.glbTransform ?? {
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: 1,
+  };
+
+  const updateGlbTransform = (partial: {
+    position?: [number, number, number];
+    rotation?: [number, number, number];
+    scale?: number;
+  }) => {
+    const updated = {
+      ...currentGlbTransform,
+      ...partial,
+    };
+    update({ glbTransform: updated });
+  };
+
+  const handleGlbFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".glb")) {
+      setUploadError("Por favor selecciona un archivo con extensión .glb");
+      return;
+    }
+
+    setUploadingGlb(true);
+    setUploadError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload/glb", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Error al subir el modelo");
+      }
+      setGlbUrl(data.url);
+      if (!config.glbTransform) {
+        update({
+          glbTransform: {
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: 1,
+          },
+        });
+      }
+    } catch (err: unknown) {
+      setUploadError(
+        err instanceof Error ? err.message : "Error al subir archivo .glb"
+      );
+    } finally {
+      setUploadingGlb(false);
+    }
+  };
 
   const applyRubroTemplate = (rubro: string) => {
     const template = RUBRO_TEMPLATES[rubro];
@@ -95,11 +167,12 @@ export default function TourEditor({ initialConfig, rubros, onSave }: TourEditor
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave(config);
+    await onSave(config, glbUrl);
     setSaving(false);
   };
 
   const TABS = [
+    { id: "model3d" as const, label: "Modelo 3D", icon: "📦" },
     { id: "room" as const, label: "Dimensiones", icon: "📐" },
     { id: "materials" as const, label: "Materiales", icon: "🎨" },
     { id: "furniture" as const, label: "Mobiliario", icon: "🪑" },
@@ -143,6 +216,212 @@ export default function TourEditor({ initialConfig, rubros, onSave }: TourEditor
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Tab: Modelo 3D (GLB / Fotogrametría) */}
+        {activeTab === "model3d" && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+            <div>
+              <h3 className="font-semibold text-slate-900 text-sm">
+                Modelo 3D / Fotogrametría (.glb)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Sube tu escaneo 3D generado por fotogrametría o software 3D para visualizarlo en el local.
+              </p>
+            </div>
+
+            {/* Input de archivo GLB */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                Subir archivo .GLB
+              </label>
+              <input
+                type="file"
+                accept=".glb"
+                disabled={uploadingGlb}
+                onChange={handleGlbFileUpload}
+                className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0E5A73] file:text-white hover:file:bg-[#093F52] file:cursor-pointer cursor-pointer"
+              />
+              {uploadingGlb && (
+                <p className="text-xs text-[#0E5A73] font-medium animate-pulse">
+                  Subiendo y procesando modelo 3D...
+                </p>
+              )}
+              {uploadError && (
+                <p className="text-xs text-red-600">{uploadError}</p>
+              )}
+            </div>
+
+            {/* Estado del modelo cargado */}
+            {glbUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs">
+                  <div className="truncate pr-2">
+                    <span className="font-bold">✓ Modelo activo:</span>
+                    <span className="ml-1 text-[11px] opacity-80 truncate block">{glbUrl}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setGlbUrl(null)}
+                    className="text-red-500 hover:text-red-700 font-bold px-2 py-1 bg-white rounded border border-red-200 flex-shrink-0"
+                  >
+                    Quitar
+                  </button>
+                </div>
+
+                {/* Controles de posición, rotación y escala */}
+                <div className="border-t border-slate-100 pt-3 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Posición del Modelo en el Espacio
+                  </h4>
+
+                  {/* Eje X (Lateral) */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <span>Posición X (Lateral)</span>
+                      <span className="font-bold text-[#0E5A73]">{currentGlbTransform.position[0].toFixed(2)} m</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-config.room.width / 2}
+                      max={config.room.width / 2}
+                      step={0.1}
+                      value={currentGlbTransform.position[0]}
+                      onChange={(e) =>
+                        updateGlbTransform({
+                          position: [
+                            parseFloat(e.target.value),
+                            currentGlbTransform.position[1],
+                            currentGlbTransform.position[2],
+                          ],
+                        })
+                      }
+                      className="w-full accent-[#0E5A73]"
+                    />
+                  </div>
+
+                  {/* Eje Y (Altura) */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <span>Posición Y (Altura)</span>
+                      <span className="font-bold text-[#0E5A73]">{currentGlbTransform.position[1].toFixed(2)} m</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={config.room.height}
+                      step={0.05}
+                      value={currentGlbTransform.position[1]}
+                      onChange={(e) =>
+                        updateGlbTransform({
+                          position: [
+                            currentGlbTransform.position[0],
+                            parseFloat(e.target.value),
+                            currentGlbTransform.position[2],
+                          ],
+                        })
+                      }
+                      className="w-full accent-[#0E5A73]"
+                    />
+                  </div>
+
+                  {/* Eje Z (Profundidad) */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <span>Posición Z (Profundidad)</span>
+                      <span className="font-bold text-[#0E5A73]">{currentGlbTransform.position[2].toFixed(2)} m</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-config.room.depth / 2}
+                      max={config.room.depth / 2}
+                      step={0.1}
+                      value={currentGlbTransform.position[2]}
+                      onChange={(e) =>
+                        updateGlbTransform({
+                          position: [
+                            currentGlbTransform.position[0],
+                            currentGlbTransform.position[1],
+                            parseFloat(e.target.value),
+                          ],
+                        })
+                      }
+                      className="w-full accent-[#0E5A73]"
+                    />
+                  </div>
+
+                  {/* Rotación Y */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <span>Rotación Horizontal</span>
+                      <span className="font-bold text-[#0E5A73]">{currentGlbTransform.rotation[1]}°</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={360}
+                      step={5}
+                      value={currentGlbTransform.rotation[1]}
+                      onChange={(e) =>
+                        updateGlbTransform({
+                          rotation: [
+                            currentGlbTransform.rotation[0],
+                            parseFloat(e.target.value),
+                            currentGlbTransform.rotation[2],
+                          ],
+                        })
+                      }
+                      className="w-full accent-[#0E5A73]"
+                    />
+                  </div>
+
+                  {/* Escala */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <span>Escala del Modelo</span>
+                      <span className="font-bold text-[#0E5A73]">{currentGlbTransform.scale.toFixed(2)}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0.1}
+                      max={5}
+                      step={0.05}
+                      value={currentGlbTransform.scale}
+                      onChange={(e) =>
+                        updateGlbTransform({
+                          scale: parseFloat(e.target.value),
+                        })
+                      }
+                      className="w-full accent-[#0E5A73]"
+                    />
+                  </div>
+
+                  {/* Botón reset transform */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateGlbTransform({
+                        position: [0, 0, 0],
+                        rotation: [0, 0, 0],
+                        scale: 1,
+                      })
+                    }
+                    className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs rounded-lg transition-colors font-medium"
+                  >
+                    Centrar objeto en el local
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center">
+                <span className="text-2xl block mb-1">📦</span>
+                <p className="text-xs text-slate-600 font-medium">Ningún modelo GLB cargado aún</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Selecciona un archivo .glb arriba para importar tu fotogrametría
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -337,7 +616,7 @@ export default function TourEditor({ initialConfig, rubros, onSave }: TourEditor
 
       {/* Preview 3D */}
       <div className="flex-1 min-h-[400px] xl:min-h-0 rounded-2xl overflow-hidden bg-slate-900">
-        <Viewer3DCanvas tourConfig={config} />
+        <Viewer3DCanvas tourConfig={config} glbUrl={glbUrl ?? undefined} />
       </div>
     </div>
   );
