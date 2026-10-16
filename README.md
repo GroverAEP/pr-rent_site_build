@@ -38,6 +38,23 @@ touch .env.local
 
 Configura `.env.local` con valores propios. No subas ese archivo al repositorio ni compartas `SUPABASE_SERVICE_ROLE_KEY`.
 
+Formato recomendado:
+
+```dotenv
+DB_DRIVER=sqlite
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+AUTH_SECRET=cambia-este-secreto-por-uno-de-al-menos-32-caracteres
+ADMIN_EMAIL=admin@tu-dominio.com
+ADMIN_PASSWORD=cambia-esta-contraseña
+
+# Solo si DB_DRIVER=supabase
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-clave-publica-de-supabase
+SUPABASE_SERVICE_ROLE_KEY=tu-clave-privada-solo-en-el-servidor
+```
+
+Para desarrollo con SQLite puedes dejar fuera las tres variables de Supabase. Para producción usa `DB_DRIVER=supabase` y reemplaza todos los placeholders por valores seguros.
+
 ### SQLite (desarrollo)
 
 ```bash
